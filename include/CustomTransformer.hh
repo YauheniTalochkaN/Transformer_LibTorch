@@ -8,10 +8,10 @@
 
 #include "PositionalEncoding.hh"
 
-class TimeSeriesTransformerImpl : public torch::nn::Module 
+class CustomTransformerImpl : public torch::nn::Module 
 {
 public:
-    TimeSeriesTransformerImpl(int input_dim,
+    CustomTransformerImpl(int input_dim,
                               int d_model,
                               int num_heads,
                               int dim_feedforward,
@@ -19,8 +19,9 @@ public:
                               int num_decoder_layers,
                               int output_dim,
                               int pred_len = 1,
+                              int max_len = 100,
                               float dropout = 0.1);
-    virtual ~TimeSeriesTransformerImpl() override = default;
+    virtual ~CustomTransformerImpl() override = default;
     virtual torch::Tensor forward(torch::Tensor src, torch::Tensor tgt = torch::Tensor());
 
 protected:
@@ -37,4 +38,4 @@ protected:
     virtual torch::Tensor generate_square_subsequent_mask(int sz);
 };
 
-TORCH_MODULE(TimeSeriesTransformer);
+TORCH_MODULE(CustomTransformer);

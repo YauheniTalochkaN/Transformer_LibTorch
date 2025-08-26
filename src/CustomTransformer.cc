@@ -1,6 +1,6 @@
-#include "TimeSeriesTransformer.hh"
+#include "CustomTransformer.hh"
 
-TimeSeriesTransformerImpl::TimeSeriesTransformerImpl(int input_dim,
+CustomTransformerImpl::CustomTransformerImpl(int input_dim,
                                                      int d_model,
                                                      int num_heads,
                                                      int dim_feedforward,
@@ -8,13 +8,14 @@ TimeSeriesTransformerImpl::TimeSeriesTransformerImpl(int input_dim,
                                                      int num_decoder_layers,
                                                      int output_dim,
                                                      int pred_len,
+                                                     int max_len,
                                                      float dropout) : pred_len(pred_len)
 {
     input_projection = register_module("input_projection", torch::nn::Linear(input_dim, d_model));
     
     tgt_projection = register_module("tgt_projection", torch::nn::Linear(output_dim, d_model));
     
-    positional_encoding = register_module("positional_encoding", PositionalEncoding(d_model));
+    positional_encoding = register_module("positional_encoding", PositionalEncoding(d_model, max_len));
     
     torch::nn::TransformerEncoderLayerOptions encoder_layer_options(d_model, num_heads);
     encoder_layer_options.dim_feedforward(dim_feedforward).dropout(dropout);
@@ -35,7 +36,7 @@ TimeSeriesTransformerImpl::TimeSeriesTransformerImpl(int input_dim,
     init_weights();
 }
 
-void TimeSeriesTransformerImpl::init_weights() 
+void CustomTransformerImpl::init_weights() 
 {
     for (auto& param : parameters()) 
     {
@@ -46,12 +47,12 @@ void TimeSeriesTransformerImpl::init_weights()
     }
 }
 
-torch::Tensor TimeSeriesTransformerImpl::generate_square_subsequent_mask(int sz) 
+torch::Tensor CustomTransformerImpl::generate_square_subsequent_mask(int sz) 
 {
     return torch::triu(torch::full({sz, sz}, -std::numeric_limits<float>::infinity()), 1);
 }
 
-torch::Tensor TimeSeriesTransformerImpl::forward(torch::Tensor src, torch::Tensor tgt) 
+torch::Tensor CustomTransformerImpl::forward(torch::Tensor src, torch::Tensor tgt) 
 {
     src = input_projection->forward(src);
     src = positional_encoding->forward(src);
